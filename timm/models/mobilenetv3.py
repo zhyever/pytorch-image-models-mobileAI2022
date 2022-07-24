@@ -246,6 +246,18 @@ class MobileNetV3Features(nn.Module):
             act_layer=act_layer, norm_layer=norm_layer, se_layer=se_layer,
             drop_path_rate=drop_path_rate, feature_location=feature_location)
         self.blocks = nn.Sequential(*builder(stem_size, block_args))
+
+
+        ### NOTE: hack for mobilenetv3
+        self.blocks = self.blocks[:5]
+        # self.blocks[4] = self.blocks[4][:2]
+        # self.blocks[4] = self.blocks[4][:1]
+        builder.features = builder.features[:4]
+        builder.features.append({'stage': 5, 'reduction': 32, 'module': 'blocks.4.2', 'hook_type': '', 'num_chs': 96})
+        # builder.features.append({'stage': 5, 'reduction': 32, 'module': 'blocks.4.1', 'hook_type': '', 'num_chs': 96})
+        print(builder.features)
+
+        
         self.feature_info = FeatureInfo(builder.features, out_indices)
         self._stage_out_idx = {v['stage']: i for i, v in enumerate(self.feature_info) if i in out_indices}
 
